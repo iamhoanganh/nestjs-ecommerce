@@ -12,6 +12,16 @@ export class AuthService {
     private jwt: JwtService,
   ) {}
   async signup(user: Users): Promise<Users> {
+    // Check if an account with the same username or email already exists
+    const existingUser = await this.userRepository.findOne({
+      where: [{ username: user.username }],
+    });
+    if (existingUser) {
+      throw new HttpException(
+        'An account with the same username or email already exists',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     // Validate email format
     const emailRegex =
       /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
@@ -25,16 +35,6 @@ export class AuthService {
         'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one digit',
         HttpStatus.BAD_REQUEST,
       );
-      // Check if an account with the same username or email already exists
-      const existingUser = await this.userRepository.findOne({
-        where: [{ username: user.username }],
-      });
-      if (existingUser) {
-        throw new HttpException(
-          'An account with the same username or email already exists',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
     }
 
     // If the user does not already exist and the password is complex enough, hash the password and save the user
