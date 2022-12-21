@@ -24,31 +24,46 @@ let CartService = class CartService {
         this.productsService = productsService;
     }
     async addToCart(productId, quantity, user) {
-        const cartItems = await this.cartRepository.find();
-        const product = await this.productsService.getOne(productId);
-        if (product) {
-            const cart = cartItems.filter((item) => item.productId === productId && item.userId === user);
-            if (cart.length < 1) {
-                const newItem = {
-                    productId: product.id,
-                    price: product.price,
-                    quantity,
-                    total: product.price * quantity,
-                    userId: user
-                };
-                return await this.cartRepository.save(newItem);
+        try {
+            const cartItems = await this.cartRepository.find();
+            const product = await this.productsService.getOne(productId);
+            if (product) {
+                const cart = cartItems.filter((item) => item.productId === productId && item.userId === user);
+                if (cart.length < 1) {
+                    const newItem = {
+                        productId: product.id,
+                        price: product.price,
+                        quantity,
+                        total: product.price * quantity,
+                        userId: user,
+                    };
+                    return await this.cartRepository.save(newItem);
+                }
+                else {
+                    const quantity = (cart[0].quantity += 1);
+                    const total = cart[0].price * quantity;
+                    return await this.cartRepository.update(cart[0].id, {
+                        quantity,
+                        total,
+                    });
+                }
             }
-            else {
-                const quantity = (cart[0].quantity += 1);
-                const total = cart[0].price * quantity;
-                return await this.cartRepository.update(cart[0].id, { quantity, total });
-            }
+            return null;
         }
-        return null;
+        catch (error) {
+            console.error(error);
+            throw error;
+        }
     }
     async getItemsInCard(user) {
-        const userCart = this.cartRepository.find();
-        return (await userCart).filter(item => item.userId === user);
+        try {
+            const userCart = this.cartRepository.find();
+            return (await userCart).filter((item) => item.userId === user);
+        }
+        catch (error) {
+            console.error(error);
+            throw error;
+        }
     }
 };
 CartService = __decorate([

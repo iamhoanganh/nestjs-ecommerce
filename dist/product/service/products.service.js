@@ -22,7 +22,13 @@ let ProductsService = class ProductsService {
         this.productRepository = productRepository;
     }
     async getAll() {
-        return await this.productRepository.find();
+        try {
+            return await this.productRepository.find();
+        }
+        catch (error) {
+            console.error(error);
+            throw error;
+        }
     }
     async create(product, user) {
         if (user.role == 'admin') {
@@ -31,19 +37,49 @@ let ProductsService = class ProductsService {
         throw new common_1.UnauthorizedException();
     }
     async getOne(id) {
-        return this.productRepository.findOne(id);
+        try {
+            const product = await this.productRepository.findOne(id);
+            if (!product) {
+                throw new common_1.NotFoundException(`Product with ID ${id} not found`);
+            }
+            return product;
+        }
+        catch (error) {
+            console.error(error);
+            throw error;
+        }
     }
     async update(id, product, user) {
-        if (user.role == 'admin') {
-            return await this.productRepository.update(id, product);
+        try {
+            if (user.role == 'admin') {
+                const result = await this.productRepository.update(id, product);
+                if (result.raw.affectedRows === 0) {
+                    throw new common_1.NotFoundException(`Product with ID ${id} not found`);
+                }
+                return result;
+            }
+            throw new common_1.UnauthorizedException();
         }
-        throw new common_1.UnauthorizedException();
+        catch (error) {
+            console.error(error);
+            throw error;
+        }
     }
     async delete(id, user) {
-        if (user.role == 'admin') {
-            return await this.productRepository.delete(id);
+        try {
+            if (user.role == 'admin') {
+                const result = await this.productRepository.delete(id);
+                if (result.raw.affectedRows === 0) {
+                    throw new common_1.NotFoundException(`Product with ID ${id} not found`);
+                }
+                return result;
+            }
+            throw new common_1.UnauthorizedException();
         }
-        throw new common_1.UnauthorizedException();
+        catch (error) {
+            console.error(error);
+            throw error;
+        }
     }
 };
 ProductsService = __decorate([

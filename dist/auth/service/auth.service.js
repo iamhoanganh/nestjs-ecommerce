@@ -42,27 +42,57 @@ let AuthService = class AuthService {
         if (existingUser) {
             throw new common_1.HttpException('An account with the same username or email already exists', common_1.HttpStatus.BAD_REQUEST);
         }
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+        if (!passwordRegex.test(user.password)) {
+            throw new common_1.HttpException('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one digit', common_1.HttpStatus.BAD_REQUEST);
+        }
         const salt = await bcrypt.genSalt();
         const hash = await bcrypt.hash(user.password, salt);
         user.password = hash;
         return await this.userRepository.save(user);
     }
     async validateUser(username, password) {
-        const foundUser = await this.userRepository.findOne({ username });
-        if (foundUser) {
-            if (await bcrypt.compare(password, foundUser.password)) {
-                const { password } = foundUser, result = __rest(foundUser, ["password"]);
-                return result;
+        try {
+            const foundUser = await this.userRepository.findOne({ username });
+            if (foundUser) {
+                if (await bcrypt.compare(password, foundUser.password)) {
+                    const { password } = foundUser, result = __rest(foundUser, ["password"]);
+                    return result;
+                }
+                else {
+                    throw new common_1.HttpException('Invalid password', common_1.HttpStatus.UNAUTHORIZED);
+                }
             }
             return null;
         }
-        return null;
+        catch (error) {
+            if (error instanceof common_1.HttpException) {
+                throw error;
+            }
+            else {
+                throw new common_1.HttpException(error.message, common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
     }
     async login(user) {
-        const payload = { username: user.username, sub: user.id, role: user.role };
-        return {
-            access_token: this.jwt.sign(payload),
-        };
+        try {
+            const payload = {
+                username: user.username,
+                sub: user.id,
+                role: user.role,
+            };
+            return {
+                access_token: this.jwt.sign(payload),
+            };
+        }
+        catch (error) {
+            if (error.name === 'JsonWebTokenError') {
+                throw new common_1.HttpException('Error generating JWT', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            else {
+                throw new common_1.HttpException(error.message, common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
     }
 };
 AuthService = __decorate([

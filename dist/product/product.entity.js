@@ -14,7 +14,7 @@ const typeorm_1 = require("typeorm");
 let ProductEntity = class ProductEntity {
 };
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)("uuid"),
+    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
     __metadata("design:type", Number)
 ], ProductEntity.prototype, "id", void 0);
 __decorate([
