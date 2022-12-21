@@ -37,7 +37,6 @@ export class AuthService {
         const { password, ...result } = foundUser;
         return result;
       }
-
       return null;
     }
     return null;
