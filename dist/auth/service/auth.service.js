@@ -36,12 +36,23 @@ let AuthService = class AuthService {
         this.jwt = jwt;
     }
     async signup(user) {
-        console.log('chui vào auth service');
-        console.log(user);
-        const salt = await bcrypt.genSalt();
-        const hash = await bcrypt.hash(user.password, salt);
-        user.password = hash;
-        return await this.userRepository.save(user);
+        try {
+            await this.userRepository.findOneOrFail({
+                where: [{ username: user.username }, { username: user.username }],
+            });
+            throw new common_1.HttpException('An account with the same username or user already exists', common_1.HttpStatus.BAD_REQUEST);
+        }
+        catch (error) {
+            if (error.name === 'EntityNotFound') {
+                const salt = await bcrypt.genSalt();
+                const hash = await bcrypt.hash(user.password, salt);
+                user.password = hash;
+                return await this.userRepository.save(user);
+            }
+            else {
+                throw error;
+            }
+        }
     }
     async validateUser(username, password) {
         const foundUser = await this.userRepository.findOne({ username });

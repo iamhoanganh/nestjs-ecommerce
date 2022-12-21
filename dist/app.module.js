@@ -15,20 +15,38 @@ const product_module_1 = require("./product/product.module");
 const typeorm_1 = require("@nestjs/typeorm");
 const cart_module_1 = require("./cart/cart.module");
 const order_module_1 = require("./order/order.module");
+const throttler_1 = require("@nestjs/throttler");
+const core_1 = require("@nestjs/core");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [auth_module_1.AuthModule, product_module_1.ProductModule, typeorm_1.TypeOrmModule.forRoot({
-                type: "sqlite",
-                database: "shoppingDB",
-                entities: [__dirname + "/**/*.entity{.ts,.js}"],
-                synchronize: true
-            }), cart_module_1.CartModule, order_module_1.OrderModule],
+        imports: [
+            auth_module_1.AuthModule,
+            product_module_1.ProductModule,
+            typeorm_1.TypeOrmModule.forRoot({
+                type: 'sqlite',
+                database: 'shoppingDB',
+                entities: [__dirname + '/**/*.entity{.ts,.js}'],
+                synchronize: true,
+            }),
+            cart_module_1.CartModule,
+            order_module_1.OrderModule,
+            throttler_1.ThrottlerModule.forRoot({
+                ttl: 60,
+                limit: 5,
+            }),
+        ],
         controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
+        providers: [
+            app_service_1.AppService,
+            {
+                provide: core_1.APP_GUARD,
+                useClass: throttler_1.ThrottlerGuard,
+            },
+        ],
     })
 ], AppModule);
 exports.AppModule = AppModule;
-console.log([__dirname + "/**/*.entity{.ts,.js}"]);
+console.log([__dirname + '/**/*.entity{.ts,.js}']);
 //# sourceMappingURL=app.module.js.map
