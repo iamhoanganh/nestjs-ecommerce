@@ -6,5 +6,6 @@ export declare class AuthController {
     signup(user: Users): Promise<Users>;
     login(req: any): Promise<{
         access_token: string;
+        role: any;
     }>;
 }

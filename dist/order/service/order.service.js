@@ -24,29 +24,17 @@ let OrderService = class OrderService {
         this.cartService = cartService;
     }
     async order(user) {
-        try {
-            const cartItems = await this.cartService.getItemsInCard(user);
-            const userOrder = cartItems.filter((item) => item.userId === user);
-            const subTotal = cartItems
-                .map((item) => item.total)
-                .reduce((acc, next) => acc + next);
-            const order = { items: userOrder, subTotal: subTotal };
-            return this.orderRepository.create(order);
-        }
-        catch (error) {
-            console.error(error.message);
-            throw new Error('There was an error placing your order. Please try again later.');
-        }
+        const cartItems = await this.cartService.getItemsInCard(user);
+        const userOrder = cartItems.filter((item) => item.userId === user);
+        const subTotal = cartItems
+            .map((item) => item.total)
+            .reduce((acc, next) => acc + next);
+        const order = { items: userOrder, subTotal: subTotal };
+        return this.orderRepository.create(order);
     }
     async getOrders(user) {
-        try {
-            const orders = await this.orderRepository.find();
-            return orders.filter((item) => item.items[0].userId === user);
-        }
-        catch (error) {
-            console.error(error.message);
-            throw new Error('There was an error retrieving your orders. Please try again later.');
-        }
+        const orders = await this.orderRepository.find();
+        return orders.filter((item) => item.items[0].userId === user);
     }
 };
 OrderService = __decorate([

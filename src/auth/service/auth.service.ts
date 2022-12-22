@@ -78,6 +78,7 @@ export class AuthService {
 
       return {
         access_token: this.jwt.sign(payload),
+        role: user.role,
       };
     } catch (error) {
       if (error.name === 'JsonWebTokenError') {

@@ -36,6 +36,12 @@ let AuthService = class AuthService {
         this.jwt = jwt;
     }
     async signup(user) {
+        const existingUser = await this.userRepository.findOne({
+            where: [{ username: user.username }],
+        });
+        if (existingUser) {
+            throw new common_1.HttpException('An account with the same username or email already exists', common_1.HttpStatus.BAD_REQUEST);
+        }
         const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
         if (!emailRegex.test(user.username)) {
             throw new common_1.HttpException('Invalid email address', common_1.HttpStatus.BAD_REQUEST);
@@ -43,12 +49,6 @@ let AuthService = class AuthService {
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
         if (!passwordRegex.test(user.password)) {
             throw new common_1.HttpException('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one digit', common_1.HttpStatus.BAD_REQUEST);
-            const existingUser = await this.userRepository.findOne({
-                where: [{ username: user.username }],
-            });
-            if (existingUser) {
-                throw new common_1.HttpException('An account with the same username or email already exists', common_1.HttpStatus.BAD_REQUEST);
-            }
         }
         const salt = await bcrypt.genSalt();
         const hash = await bcrypt.hash(user.password, salt);
@@ -87,6 +87,7 @@ let AuthService = class AuthService {
             };
             return {
                 access_token: this.jwt.sign(payload),
+                role: user.role,
             };
         }
         catch (error) {
