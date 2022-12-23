@@ -12,6 +12,8 @@ export class AuthService {
     private jwt: JwtService,
   ) {}
   async signup(user: Users): Promise<Users> {
+    // Set default role to "user"
+    user.role = 'user';
     // Check if an account with the same username or email already exists
     const existingUser = await this.userRepository.findOne({
       where: [{ username: user.username }],
@@ -26,7 +28,10 @@ export class AuthService {
     const emailRegex =
       /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     if (!emailRegex.test(user.username)) {
-      throw new HttpException('Invalid email address', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Email address is invalid. It must contain a local part, an @ symbol, and a domain part, separated by dots.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     // Validate password complexity
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
@@ -41,6 +46,7 @@ export class AuthService {
     const salt = await bcrypt.genSalt();
     const hash = await bcrypt.hash(user.password, salt);
     user.password = hash;
+
     return await this.userRepository.save(user);
   }
 

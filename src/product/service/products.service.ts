@@ -32,7 +32,7 @@ export class ProductsService {
     throw new UnauthorizedException();
   }
 
-  async getOne(id: number): Promise<ProductEntity> {
+  async getOne(id: number | string): Promise<ProductEntity> {
     try {
       const product = await this.productRepository.findOne(id);
       if (!product) {
@@ -67,7 +67,7 @@ export class ProductsService {
     }
   }
 
-  async delete(id: number, user: Users): Promise<DeleteResult> {
+  async delete(id: number | string, user: Users): Promise<DeleteResult> {
     try {
       if (user.role == 'admin') {
         const result = await this.productRepository.delete(id);

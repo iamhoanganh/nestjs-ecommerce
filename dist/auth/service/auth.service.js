@@ -36,6 +36,7 @@ let AuthService = class AuthService {
         this.jwt = jwt;
     }
     async signup(user) {
+        user.role = 'user';
         const existingUser = await this.userRepository.findOne({
             where: [{ username: user.username }],
         });
@@ -44,7 +45,7 @@ let AuthService = class AuthService {
         }
         const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
         if (!emailRegex.test(user.username)) {
-            throw new common_1.HttpException('Invalid email address', common_1.HttpStatus.BAD_REQUEST);
+            throw new common_1.HttpException('Email address is invalid. It must contain a local part, an @ symbol, and a domain part, separated by dots.', common_1.HttpStatus.BAD_REQUEST);
         }
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
         if (!passwordRegex.test(user.password)) {
